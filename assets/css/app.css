@@ -11,30 +11,24 @@ body {
     background-attachment: fixed;
 }
 
-table {
-  border-collapse: collapse;
+.dishesTable {
+  table-layout: fixed;
   width: 60%;
+  border-collapse: collapse;
   margin: 20px auto;
 }
 
+.col50 { width: 50px; }
+.col100 { width: 100px; }
+.col200 { width: 200px; }
+
 th, td {
-  border: 1px solid #023581;
+  border: 1px solid #0329d1;
 }
 
 th {
   background-color: #f5f5f5;
 }
-
-.col50 {
-    width: 50px;
-}
-.col100 {
-  width: 100px;
-}
-.col200 {
-  width: 200px;
-}
-
 .cart {
   padding: 20px 50px;
 }
