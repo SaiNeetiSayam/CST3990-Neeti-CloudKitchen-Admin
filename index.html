@@ -62,10 +62,52 @@
 
                 </div>
                 <div v-else-if='updateDish'>
-                    
+                    <p>
+                        <strong>Dish ID:</strong>
+                        <input v-model.trim="dishId" @input="dishId = dishId.replace(/[^0-9]/g,'')" placeholder="Numbers only"/>
+                        <button v-on:click='findDish()' :disabled='!canFindDish()'>Find</button>
+                    </p>                    
                 </div>
-                <div v-else='deleteDish'>
-                    
+                <div v-else-if='deleteDish'>
+                    <p>
+                        <strong>Dish ID:</strong>
+                        <input v-model.trim="dishId" @input="dishId = dishId.replace(/[^0-9]/g,'')" placeholder="Numbers only"/>
+                        <button v-on:click='findDish()' :disabled='!canFindDish()'>Find</button>
+                    </p>                                        
+                </div>
+                <div v-if='dishFound'>
+                    <!-- Display dish details -->
+                    <p>
+                        <strong>Name:</strong>
+                        <!-- This input field is bound to 'selectedDish.dishName' -->
+                        <input v-model.trim="selectedDish.dishName" :disabled=true @input="selectedDish.dishName = selectedDish.dishName.replace(/[^A-Za-z0-9 ]/g,'')" placeholder="Aphanumeric only"/>
+                    </p>
+                    <p>
+                        <strong>Category:</strong>
+                        <!-- This input field is bound to 'selectedDish.category' -->
+                        <input v-model.trim="selectedDish.category" :disabled=true @input="selectedDish.category = selectedDish.category.replace(/[^A-Za-z ]/g,'')" placeholder="Letters only"/>
+                    </p>
+                    <p>
+                        <strong>Tags:</strong>
+                        <!-- This input field is bound to 'selectedDish.tags' -->
+                        <input v-model.trim="selectedDish.tags" :disabled=true @input="selectedDish.tags = selectedDish.tags.replace(/[^A-Za-z ]/g,'')" placeholder="Letters only"/>
+                    </p>
+                    <p>
+                        <strong>Price (AED):</strong>
+                        <!-- This input field is bound to 'selectedDish.price' -->
+                        <input v-model.trim="selectedDish.price" :disabled='!updateDish' @input="selectedDish.price = selectedDish.price.replace(/[^0-9]/g,'')" placeholder="Digits only"/>
+                    </p>
+                    <p>
+                        <strong>Available Stock:</strong>
+                        <!-- This input field is bound to 'selectedDish.availableStock' -->
+                        <input v-model.trim="selectedDish.availableStock" :disabled='!updateDish' @input="selectedDish.availableStock = selectedDish.availableStock.replace(/[^0-9]/g,'')" placeholder="Digits only"/>
+                    </p>
+                    <div v-if='updateDish'>
+                        <button v-on:click='putDish()'>Update</button>                    
+                    </div>
+                    <div v-else>
+                        <button v-on:click='delDish()'>Delete</button>                                       
+                    </div>                                        
                 </div>  
             </main>
         </div>
@@ -74,13 +116,22 @@
                 el:'#app',//<===Don't forget this comma
                 data() {    // returns default null string values for name and phone no., if not entered by user
                     return {
+                        selectedDish: {
+                            dishName: '',
+                            category: '',
+                            tags: '',
+                            price: null,
+                            availableStock: null
+                        },
                         displayDishes: false,
                         addDish: false,
                         updateDish: false,
                         deleteDish: false,
                         passwordCheckStatus: '',                    
                         enableButtons: false,
-                        password: ''
+                        password: '',
+                        dishId: '',
+                        dishFound: false,
                     }
                 },
                 data: { //the 'data' option
@@ -91,7 +142,8 @@
                     updateDish: false,
                     deleteDish: false,
                     password: "",
-
+                    dishId: "",
+                    dishFound: false,
                     //We need to read dishes from the server/database
                     dishes: [], // array to read dishes from the server & database
                     dishesToDisplay: [],
@@ -116,11 +168,11 @@
                 },
                 methods: {
 
-                    showShoppingCart() {
-                        this.showMenu = this.showMenu ? false : true; 
-                    },
                     canLogin() {
                         return this.password !== ""; 
+                    },
+                    canFindDish() {
+                        return this.dishId !== ""; 
                     },
                     //Checks if the password entered by the user is correct.
                     login()   {
@@ -137,18 +189,53 @@
                     displayAllDishes()  {
                         //Create a new array of dishes without _id and NutritionFacts fields
                         for(let i = 0; i < this.dishes.length; i++) {
-                            this.dishesToDisplay.push([this.dishes[i].DishID, this.dishes[i].Category, this.dishes[i].Name, this.dishes[i].Price, this.dishes[i].AvailableStock]) 
+                            this.dishesToDisplay.push([this.dishes[i].DishID, this.dishes[i].Category, this.dishes[i].Name, this.dishes[i].Price, this.dishes[i].AvailableStock]);
                         }
                         this.displayDishes = true;
+                        this.addDish = false;
+                        this.updateDish = false;
+                        this.deleteDish = false;
                     },                    
                     addADish() {
                         this.addDish = true;
+                        this.displayDishes = false;
+                        this.updateDish = false;
+                        this.deleteDish = false;
                     },
                     updateADish() {
                         this.updateDish = true;
+                        this.addDish = false;
+                        this.displayDishes = false;
+                        this.deleteDish = false;                        
                     },
                     deleteADish() {
                         this.deleteDish = true;
+                        this.updateDish = false;
+                        this.addDish = false;
+                        this.displayDishes = false;
+                    },
+                    findDish() {
+                        this.dishFound = false;
+                        console.log('this.dishId = ' + this.dishId);
+                        //Find the dish for the entered dishID
+                        for(let i = 0; i < this.dishes.length; i++) {
+                            console.log('this.dishes['+i+'].DishID = ' + this.dishes[i].DishID + ' this.dishId = ' + this.dishId);
+                            if (this.dishes[i].DishID === this.dishId)  {
+                                console.log('Dish found!!');
+                                selectedDish = this.dishes[i];
+                                this.dishFound = true;
+                                this.selectedDish.dishName = this.dishes[i].Name;
+                                this.selectedDish.category = this.dishes[i].Category;
+                                this.selectedDish.tags = this.dishes[i].Tags;
+                                this.selectedDish.price = this.dishes[i].Price;
+                                this.selectedDish.availableStock = this.dishes[i].AvailableStock;
+                                break;
+                            }                            
+                        }
+                        if (!this.dishFound)    {
+                            alert('Invalid Dish ID. Please try again!');
+                            this.dishId = "";
+                        }
                     },
                     //  Fetch function to POST customer details to mongoDB database in Customers collection
                     async postDish() {
@@ -175,65 +262,42 @@
                     },
                     //  Fetch function to PUT available stock to mongoDB database in Dishes collection
                     async putDish() {
-                        console.log('dishes.length = ' + this.dishes.length);
-                        console.log('this.cart = ' + this.cart);
-
-                        console.log('Checking in Cart for DishID = ' + dish.DishID);
-                        console.log('Dishes found with this DishID = ' + this.cartCount(dish.DishID));
+                        console.log('Updating dish with DishID = ' + this.dishId);
                         
-                        //If the cart contains dish with this DishID, only then update the available stock in the database
-                        if (this.cartCount(dish.DishID) > 0) {
-                            try {
-                                console.log(`dish._id = ${dish._id}`);
+                        try {
+                            console.log(`dish._id = ${this.selectedDish._id}`);
 
-                                console.log('Available stock left for this dish = ' + String(dish.AvailableStock - this.cartCount(dish.DishID)));
-                                const response = await fetch(`https://cst3990-neeti-express.onrender.com/collection/Dishes/${dish._id}`, {
-                                    method: "PUT",
-                                    headers: {
-                                        "Content-Type": "application/json"
-                                    },
-                                    body: JSON.stringify({
-                                        //If this dish id is found in the cart, reduce this count from available stock for the dish
-                                        AvailableStock: dish.AvailableStock - this.cartCount(dish.DishID) 
-                                    })
-                                });
-                                //The Web Client has to wait for the server response since it is an asynchronous operation.
-                                const result = await response.json();
-                                console.log("PUT Response:", result);
-                            } catch (error) {
-                                console.error("PUT Error:", error);
-                            }
+                            const response = await fetch(`https://cst3990-neeti-express.onrender.com/collection/Dishes/${this.selectedDish._id}`, {
+                                method: "PUT",
+                                headers: {
+                                    "Content-Type": "application/json"
+                                },
+                                body: JSON.stringify({
+                                    Price: this.selectedDish.price,
+                                    AvailableStock: this.selectedDish.availableStock
+                                })
+                            });
+                            //The Web Client has to wait for the server response since it is an asynchronous operation.
+                            const result = await response.json();
+                            console.log("PUT Response:", result);
+                        } catch (error) {
+                            console.error("PUT Error:", error);
                         }
                     },                                        //  Fetch function to PUT available stock to mongoDB database in Dishes collection
                     async delDish() {
-                        console.log('dishes.length = ' + this.dishes.length);
-                        console.log('this.cart = ' + this.cart);
-
-                        console.log('Checking in Cart for DishID = ' + dish.DishID);
-                        console.log('Dishes found with this DishID = ' + this.cartCount(dish.DishID));
+                         console.log('Deleting dish with DishID = ' + this.dishId);
                         
-                        //If the cart contains dish with this DishID, only then update the available stock in the database
-                        if (this.cartCount(dish.DishID) > 0) {
-                            try {
-                                console.log(`dish._id = ${dish._id}`);
+                        try {
+                            console.log(`dish._id = ${this.selectedDish._id}`);
 
-                                console.log('Available stock left for this dish = ' + String(dish.AvailableStock - this.cartCount(dish.DishID)));
-                                const response = await fetch(`https://cst3990-neeti-express.onrender.com/collection/Dishes/${dish._id}`, {
-                                    method: "PUT",
-                                    headers: {
-                                        "Content-Type": "application/json"
-                                    },
-                                    body: JSON.stringify({
-                                        //If this dish id is found in the cart, reduce this count from available stock for the dish
-                                        AvailableStock: dish.AvailableStock - this.cartCount(dish.DishID) 
-                                    })
-                                });
-                                //The Web Client has to wait for the server response since it is an asynchronous operation.
-                                const result = await response.json();
-                                console.log("PUT Response:", result);
-                            } catch (error) {
-                                console.error("PUT Error:", error);
-                            }
+                            const response = await fetch(`https://cst3990-neeti-express.onrender.com/collection/Dishes/${this.selectedDish._id}`, {
+                                method: "DELETE"
+                            });
+                            //The Web Client has to wait for the server response since it is an asynchronous operation.
+                            const result = await response.json();
+                            console.log("DELETE Response:", result);
+                        } catch (error) {
+                            console.error("DELETE Error:", error);
                         }
                     },
 
@@ -282,8 +346,6 @@
                                     });
                             }
                         )
-                        //toggle showMenu
-                        this.showMenu = true;
                     },
                 },
                 computed: { //the Computed Property object
