@@ -76,39 +76,43 @@
                     </p>                                        
                 </div>
                 <div v-if='dishFound'>
-                    <!-- Display dish details -->
-                    <p>
-                        <strong>Name:</strong>
-                        <!-- This input field is bound to 'dishName' -->
-                        <input v-model.trim="dishName" :disabled=true @input="dishName = dishName.replace(/[^A-Za-z0-9 ]/g,'')" placeholder="Aphanumeric only"/>
-                    </p>
-                    <p>
-                        <strong>Category:</strong>
-                        <!-- This input field is bound to 'category' -->
-                        <input v-model.trim="category" :disabled=true @input="category = category.replace(/[^A-Za-z ]/g,'')" placeholder="Letters only"/>
-                    </p>
-                    <p>
-                        <strong>Tags:</strong>
-                        <!-- This input field is bound to 'tags' -->
-                        <input v-model.trim="tags" :disabled=true @input="tags = tags.replace(/[^A-Za-z ]/g,'')" placeholder="Letters only"/>
-                    </p>
-                    <p>
-                        <strong>Price (AED):</strong>
-                        <!-- This input field is bound to 'price' -->
-                        <input v-model.trim="price" :disabled='!updateDish' @input="price = price.replace(/[^0-9]/g,'')" placeholder="Digits only"/>
-                    </p>
-                    <p>
-                        <strong>Available Stock:</strong>
-                        <!-- This input field is bound to 'availableStock' -->
-                        <input v-model.trim="availableStock" :disabled='!updateDish' @input="availableStock = availableStock.replace(/[^0-9]/g,'')" placeholder="Digits only"/>
-                    </p>
-                    <div v-if='updateDish'>
-                        <button v-on:click='putDish()'>Update</button>                    
+                    <div class="row">
+                        <!-- Display dish details -->
+                        <p>
+                            <strong>Name:</strong>
+                            <!-- This input field is bound to 'dishName' -->
+                            <input v-model.trim="dishName" :disabled=true @input="dishName = dishName.replace(/[^A-Za-z0-9 ]/g,'')" placeholder="Aphanumeric only"/>
+                        </p>
+                        <p>
+                            <strong>Category:</strong>
+                            <!-- This input field is bound to 'category' -->
+                            <input v-model.trim="category" :disabled=true @input="category = category.replace(/[^A-Za-z ]/g,'')" placeholder="Letters only"/>
+                        </p>
+                        <p>
+                            <strong>Tags:</strong>
+                            <!-- This input field is bound to 'tags' -->
+                            <input v-model.trim="tags" :disabled=true @input="tags = tags.replace(/[^A-Za-z ]/g,'')" placeholder="Letters only"/>
+                        </p>
+                        <p>
+                            <strong>Price (AED):</strong>
+                            <!-- This input field is bound to 'price' -->
+                            <input v-model.trim="price" :disabled='!updateDish' @input="price = price.replace(/[^0-9]/g,'')" placeholder="Digits only"/>
+                        </p>
+                        <p>
+                            <strong>Available Stock:</strong>
+                            <!-- This input field is bound to 'availableStock' -->
+                            <input v-model.trim="availableStock" :disabled='!updateDish' @input="availableStock = availableStock.replace(/[^0-9]/g,'')" placeholder="Digits only"/>
+                        </p>
                     </div>
-                    <div v-else-if='deleteDish'>
-                        <button v-on:click='delDish()'>Delete</button>                                       
-                    </div>                                        
-                </div>  
+                    <div>
+                        <div v-if='updateDish'>
+                            <button v-on:click='putDish()'>Update</button>                    
+                        </div>
+                        <div v-else-if='deleteDish'>
+                            <button v-on:click='delDish()'>Delete</button>                                       
+                        </div>                                        
+                    </div>
+                </div>
             </main>
         </div>
         <script type="text/javascript">
@@ -284,7 +288,7 @@
                             //The Web Client has to wait for the server response since it is an asynchronous operation.
                             const result = await response.json();
                             console.log("PUT Response:", result);
-                            alert('Updated Dish with Id' + this.dishId);
+                            alert('Updated Dish with ID# ' + this.dishId);
                         } catch (error) {
                             console.error("PUT Error:", error);
                         }
@@ -316,7 +320,7 @@
                             //The Web Client has to wait for the server response since it is an asynchronous operation.
                             const result = await response.json();
                             console.log("DELETE Response:", result);
-                            alert('Deleted Dish with Id' + this.dishId);                            
+                            alert('Deleted Dish with ID# ' + this.dishId);                            
                         } catch (error) {
                             console.error("DELETE Error:", error);
                         }
