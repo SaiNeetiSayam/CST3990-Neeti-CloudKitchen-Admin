@@ -79,33 +79,33 @@
                     <!-- Display dish details -->
                     <p>
                         <strong>Name:</strong>
-                        <!-- This input field is bound to 'selectedDish.dishName' -->
-                        <input v-model.trim="selectedDish.dishName" :disabled=true @input="selectedDish.dishName = selectedDish.dishName.replace(/[^A-Za-z0-9 ]/g,'')" placeholder="Aphanumeric only"/>
+                        <!-- This input field is bound to 'dishName' -->
+                        <input v-model.trim="dishName" :disabled=true @input="dishName = dishName.replace(/[^A-Za-z0-9 ]/g,'')" placeholder="Aphanumeric only"/>
                     </p>
                     <p>
                         <strong>Category:</strong>
-                        <!-- This input field is bound to 'selectedDish.category' -->
-                        <input v-model.trim="selectedDish.category" :disabled=true @input="selectedDish.category = selectedDish.category.replace(/[^A-Za-z ]/g,'')" placeholder="Letters only"/>
+                        <!-- This input field is bound to 'category' -->
+                        <input v-model.trim="category" :disabled=true @input="category = category.replace(/[^A-Za-z ]/g,'')" placeholder="Letters only"/>
                     </p>
                     <p>
                         <strong>Tags:</strong>
-                        <!-- This input field is bound to 'selectedDish.tags' -->
-                        <input v-model.trim="selectedDish.tags" :disabled=true @input="selectedDish.tags = selectedDish.tags.replace(/[^A-Za-z ]/g,'')" placeholder="Letters only"/>
+                        <!-- This input field is bound to 'tags' -->
+                        <input v-model.trim="tags" :disabled=true @input="tags = tags.replace(/[^A-Za-z ]/g,'')" placeholder="Letters only"/>
                     </p>
                     <p>
                         <strong>Price (AED):</strong>
-                        <!-- This input field is bound to 'selectedDish.price' -->
-                        <input v-model.trim="selectedDish.price" :disabled='!updateDish' @input="selectedDish.price = selectedDish.price.replace(/[^0-9]/g,'')" placeholder="Digits only"/>
+                        <!-- This input field is bound to 'price' -->
+                        <input v-model.trim="price" :disabled='!updateDish' @input="price = price.replace(/[^0-9]/g,'')" placeholder="Digits only"/>
                     </p>
                     <p>
                         <strong>Available Stock:</strong>
-                        <!-- This input field is bound to 'selectedDish.availableStock' -->
-                        <input v-model.trim="selectedDish.availableStock" :disabled='!updateDish' @input="selectedDish.availableStock = selectedDish.availableStock.replace(/[^0-9]/g,'')" placeholder="Digits only"/>
+                        <!-- This input field is bound to 'availableStock' -->
+                        <input v-model.trim="availableStock" :disabled='!updateDish' @input="availableStock = availableStock.replace(/[^0-9]/g,'')" placeholder="Digits only"/>
                     </p>
                     <div v-if='updateDish'>
                         <button v-on:click='putDish()'>Update</button>                    
                     </div>
-                    <div v-else>
+                    <div v-else-if='deleteDish'>
                         <button v-on:click='delDish()'>Delete</button>                                       
                     </div>                                        
                 </div>  
@@ -116,13 +116,6 @@
                 el:'#app',//<===Don't forget this comma
                 data() {    // returns default null string values for name and phone no., if not entered by user
                     return {
-                        selectedDish: {
-                            dishName: '',
-                            category: '',
-                            tags: '',
-                            price: null,
-                            availableStock: null
-                        },
                         displayDishes: false,
                         addDish: false,
                         updateDish: false,
@@ -130,8 +123,13 @@
                         passwordCheckStatus: '',                    
                         enableButtons: false,
                         password: '',
-                        dishId: '',
+                        dishId: null,
                         dishFound: false,
+                        dishName: '',
+                        category: '',
+                        tags: '',
+                        price: null,
+                        availableStock: null
                     }
                 },
                 data: { //the 'data' option
@@ -142,13 +140,19 @@
                     updateDish: false,
                     deleteDish: false,
                     password: "",
-                    dishId: "",
+                    dishId: null,
                     dishFound: false,
                     //We need to read dishes from the server/database
                     dishes: [], // array to read dishes from the server & database
                     dishesToDisplay: [],
                     passwordCheckStatus: "",                    
-                    enableButtons: false
+                    enableButtons: false,
+                    selectedDish: null,
+                    dishName: "",
+                    category: "",
+                    tags: "",
+                    price: null,
+                    availableStock: null
                 },
                 //  Fetch function to GET all the dishes from mongoDB database in Dishes collection
                 created: function () {
@@ -187,6 +191,7 @@
                         }                      
                     },
                     displayAllDishes()  {
+                        this.dishesToDisplay.length = 0;
                         //Create a new array of dishes without _id and NutritionFacts fields
                         for(let i = 0; i < this.dishes.length; i++) {
                             this.dishesToDisplay.push([this.dishes[i].DishID, this.dishes[i].Category, this.dishes[i].Name, this.dishes[i].Price, this.dishes[i].AvailableStock]);
@@ -219,16 +224,15 @@
                         console.log('this.dishId = ' + this.dishId);
                         //Find the dish for the entered dishID
                         for(let i = 0; i < this.dishes.length; i++) {
-                            console.log('this.dishes['+i+'].DishID = ' + this.dishes[i].DishID + ' this.dishId = ' + this.dishId);
-                            if (this.dishes[i].DishID === this.dishId)  {
+                            if (Number(this.dishes[i].DishID) === Number(this.dishId))  {
                                 console.log('Dish found!!');
-                                selectedDish = this.dishes[i];
+                                this.selectedDish = this.dishes[i];
                                 this.dishFound = true;
-                                this.selectedDish.dishName = this.dishes[i].Name;
-                                this.selectedDish.category = this.dishes[i].Category;
-                                this.selectedDish.tags = this.dishes[i].Tags;
-                                this.selectedDish.price = this.dishes[i].Price;
-                                this.selectedDish.availableStock = this.dishes[i].AvailableStock;
+                                this.dishName = this.dishes[i].Name;
+                                this.category = this.dishes[i].Category;
+                                this.tags = this.dishes[i].Tags;
+                                this.price = this.dishes[i].Price;
+                                this.availableStock = this.dishes[i].AvailableStock;
                                 break;
                             }                            
                         }
@@ -262,7 +266,7 @@
                     },
                     //  Fetch function to PUT available stock to mongoDB database in Dishes collection
                     async putDish() {
-                        console.log('Updating dish with DishID = ' + this.dishId);
+                        console.log('Updating selected dish = ' + this.selectedDish);
                         
                         try {
                             console.log(`dish._id = ${this.selectedDish._id}`);
@@ -273,19 +277,35 @@
                                     "Content-Type": "application/json"
                                 },
                                 body: JSON.stringify({
-                                    Price: this.selectedDish.price,
-                                    AvailableStock: this.selectedDish.availableStock
+                                    Price: Number(this.price),
+                                    AvailableStock: Number(this.availableStock)
                                 })
                             });
                             //The Web Client has to wait for the server response since it is an asynchronous operation.
                             const result = await response.json();
                             console.log("PUT Response:", result);
+                            alert('Updated Dish with Id' + this.dishId);
                         } catch (error) {
                             console.error("PUT Error:", error);
                         }
+                        this.updateDish = false;
+                        this.dishFound = false;
+                        console.log('Refresh Dishes data from server ...');
+                            
+                        fetch('https://cst3990-neeti-express.onrender.com/collection/Dishes').then (
+                            function (response) {
+                                response.json().then (
+                                    function (json) {
+                                        // save the returned JSON object to
+                                        // 'dishes' data property
+                                        cloudKitchen.dishes = json;
+                                        console.log(json);
+                                    });
+                            }
+                        )                    
                     },                                        //  Fetch function to PUT available stock to mongoDB database in Dishes collection
                     async delDish() {
-                         console.log('Deleting dish with DishID = ' + this.dishId);
+                        console.log('Deleting selected dish = ' + this.selectedDish);
                         
                         try {
                             console.log(`dish._id = ${this.selectedDish._id}`);
@@ -296,9 +316,25 @@
                             //The Web Client has to wait for the server response since it is an asynchronous operation.
                             const result = await response.json();
                             console.log("DELETE Response:", result);
+                            alert('Deleted Dish with Id' + this.dishId);                            
                         } catch (error) {
                             console.error("DELETE Error:", error);
                         }
+                        this.deleteDish = false;
+                        this.dishFound = false;
+                        console.log('Refresh Dishes data from server ...');
+                            
+                        fetch('https://cst3990-neeti-express.onrender.com/collection/Dishes').then (
+                            function (response) {
+                                response.json().then (
+                                    function (json) {
+                                        // save the returned JSON object to
+                                        // 'dishes' data property
+                                        cloudKitchen.dishes = json;
+                                        console.log(json);
+                                    });
+                            }
+                        )                              
                     },
 
                     //This method is called when the Checkout button is clicked. 

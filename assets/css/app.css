@@ -11,6 +11,13 @@ body {
     background-attachment: fixed;
 }
 
+.form {
+  display: grid;
+  grid-template-columns: 100px 200px;
+  gap: 10px;
+  align-items: center;
+}
+
 .dishesTable {
   table-layout: fixed;
   width: 60%;
