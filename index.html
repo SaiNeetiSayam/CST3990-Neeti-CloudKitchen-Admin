@@ -59,7 +59,60 @@
                     </div>
                 </div>
                 <div v-else-if='addDish'>
+                    <p>
+                        <strong>Dish ID:</strong>
+                        <!-- This input field is bound to 'dishId' -->
+                        <input v-model.trim="dishId" :disabled=true />
+                    </p>
+                    <p>
+                        <strong>Dish Name:</strong>
+                        <!-- This input field is bound to 'dishName' -->
+                        <input v-model.trim="dishName" :disabled=false @input="dishName = dishName.replace(/[^A-Za-z0-9 ]/g,'')" placeholder="Aphanumeric only"/>
+                    </p>
+                    <p>
+                        <strong>Category:</strong>
+                        <!-- This input field is bound to 'category' -->
+                        <input v-model.trim="category" :disabled=false @input="category = category.replace(/[^A-Za-z ]/g,'')" placeholder="Letters only"/>
+                    </p>
+                    <p>
+                        <strong>Tags for Dish:</strong>
+                        <!-- This input field is bound to 'tags' -->
+                        <input v-model.trim="tags" :disabled=false @input="tags = tags.replace(/[^A-Za-z ]/g,'')" placeholder="Letters only"/>
+                    </p>
+                    <p>
+                        <strong>Price (AED):</strong>
+                        <!-- This input field is bound to 'price' -->
+                        <input v-model.trim="price" :disabled=false @input="price = price.replace(/[^0-9]/g,'')" placeholder="Digits only"/>
+                    </p>
+                    <p>
+                        <strong>Available Stock:</strong>
+                        <!-- This input field is bound to 'availableStock' -->
+                        <input v-model.trim="availableStock" :disabled=false @input="availableStock = availableStock.replace(/[^0-9]/g,'')" placeholder="Digits only"/>
+                    </p>
+                    <p>
+                        <strong>Image URL:</strong>
+                        <!-- This input field is bound to 'image' -->
+                        <input v-model.trim="image" size="100" :disabled=false placeholder="Valid HTTPS URL"/>
+                    </p>
+                    <p>
+                        <table border="1">
+                            <!-- Header Row -->
+                            <tr>
+                                <th class="col200">Nutrition-fact</th>
+                                <th class="col50">Value</th>
+                                <th class="col50">Unit</th>
+                            </tr>
 
+                            <!-- Data Rows -->
+                            <tr v-for="(row, rowIndex) in nutritionFacts" :key="rowIndex">
+                                <td v-for="(cell, colIndex) in row" :key="colIndex">
+                                    <input v-model="nutritionFacts[rowIndex][colIndex]" />
+                                </td>
+                            </tr>
+                        </table>
+                        <button @click="addRow">Add Row</button>
+                    </p>                        
+                    <button v-on:click='postDish' :disabled='!enableAddDish()'>Add to Collection</button>
                 </div>
                 <div v-else-if='updateDish'>
                     <p>
@@ -133,7 +186,12 @@
                         category: '',
                         tags: '',
                         price: null,
-                        availableStock: null
+                        availableStock: null,
+                        image: '',
+                        nutritionFacts: [
+                            ["", "", ""], // row 1
+                            ["", "", ""]  // row 2
+                        ]
                     }
                 },
                 data: { //the 'data' option
@@ -156,7 +214,12 @@
                     category: "",
                     tags: "",
                     price: null,
-                    availableStock: null
+                    availableStock: null,
+                    image: "",
+                    nutritionFacts: [
+                        ["", "", ""], // row 1
+                        ["", "", ""]  // row 2
+                    ]
                 },
                 //  Fetch function to GET all the dishes from mongoDB database in Dishes collection
                 created: function () {
@@ -181,6 +244,25 @@
                     },
                     canFindDish() {
                         return this.dishId !== ""; 
+                    },
+                    enableAddDish() {
+                        console.log('this.dishName = ' + this.dishName);
+                        console.log('this.category = ' + this.category);
+                        console.log('this.tags = ' + this.tags);
+                        console.log('this.price = ' + this.price);
+                        console.log('this.availableStock = ' + this.availableStock);
+                        console.log('this.image = ' + this.image);                        
+                        return this.dishName !== "" && this.category !== "" && this.tags !== "" && this.price !== null && this.availableStock !== null && this.image !== "";
+                    },
+                    clearDishDetails()  {
+                        this.dishId = null;
+                        this.dishName = "";
+                        this.category = "";
+                        this.tags = "";
+                        this.price = null;
+                        this.availableStock = null;
+                        this.image = "";
+                        this.nutritionFacts.length = 0;
                     },
                     //Checks if the password entered by the user is correct.
                     login()   {
@@ -210,6 +292,17 @@
                         this.displayDishes = false;
                         this.updateDish = false;
                         this.deleteDish = false;
+                        this.clearDishDetails();
+                        //Get the highest dishId in the collection and increment by 1
+                        this.dishId = 0;
+                        for(let i = 0; i < this.dishes.length; i++) {
+                            if (Number(this.dishes[i].DishID) > Number(this.dishId))    {
+                                this.dishId = Number(this.dishes[i].DishID);
+                            }
+                        }
+                        console.log('Highest dishID found in the collection = '+ this.dishId);
+                        //Increment by 1
+                        this.dishId += 1;  
                     },
                     updateADish() {
                         this.updateDish = true;
@@ -226,7 +319,7 @@
                     findDish() {
                         this.dishFound = false;
                         console.log('this.dishId = ' + this.dishId);
-                        //Find the dish for the entered dishID
+                        //Find the dish for the entered dishId
                         for(let i = 0; i < this.dishes.length; i++) {
                             if (Number(this.dishes[i].DishID) === Number(this.dishId))  {
                                 console.log('Dish found!!');
@@ -245,6 +338,9 @@
                             this.dishId = "";
                         }
                     },
+                    addRow() {
+                        this.nutritionFacts.push(["", "", ""]); // always 3 columns
+                    },
                     //  Fetch function to POST customer details to mongoDB database in Customers collection
                     async postDish() {
                         try {
@@ -254,19 +350,40 @@
                                     "Content-Type": "application/json"
                                 },
                                 body: JSON.stringify({
-                                    CustomerName: this.order.CustomerName,
-                                    Password: this.order.Password,
-                                    MobileNo: this.order.MobileNo,
-                                    Address: this.order.Address,
-                                    Landmark: this.order.Landmark,
+                                    DishID: this.dishId,
+                                    Name: this.dishName,
+                                    Category: this.category,
+                                    Tags: this.tags,
+                                    Price: this.price,
+                                    AvailableStock: this.availableStock,
+                                    Image: this.image,
+                                    NutritionFacts: this.nutritionFacts
                                 })
                             });
                             //The Web Client has to wait for the server response since it is an asynchronous operation.
                             const result = await response.json(); 
                             console.log("Server Response:", result);
+                            alert('Added Dish with ID# ' + this.dishId);
                         } catch (error) {
                             console.error("POST Error:", error);
                         }
+                        console.log('Refresh Dishes data from server ...');
+                            
+                        fetch('https://cst3990-neeti-express.onrender.com/collection/Dishes').then (
+                            function (response) {
+                                response.json().then (
+                                    function (json) {
+                                        // save the returned JSON object to
+                                        // 'dishes' data property
+                                        cloudKitchen.dishes = json;
+                                        console.log(json);
+                                    });
+                            }
+                        )
+                        //Clear the flags and the text fields
+                        this.addDish = false;
+                        this.dishFound = false;
+                        this.clearDishDetails();                    
                     },
                     //  Fetch function to PUT available stock to mongoDB database in Dishes collection
                     async putDish() {
@@ -339,53 +456,6 @@
                                     });
                             }
                         )                              
-                    },
-
-                    //This method is called when the Checkout button is clicked. 
-                    submitForm() {
-                        console.log("Name = " + this.order.CustomerName + "Phone = " + this.order.MobileNo);
-                        console.log("Dishes ordered = " + this.cart);
-                        console.log('Sending order details to the server ...');
-                        this.postOrderDetails(); // POST order details to the server
-                        console.log('Sending available stock update to the server ...');
-                        for(let i = 0; i < this.dishes.length; i++) {
-                            this.updateAvailableStock(this.dishes[i]); // update available stock in each dish (using PUT) to the server.
-                        }
-                        //If customer not found, make an entry into the Customers collection
-                        if (!this.customerFound)    {
-                            this.postCustomerDetails();
-                        }   else    {
-                            //If customer found, update the Customer details into the Customers collection
-                            this.updateCustomerDetails();
-                        }
-                        alert('Order submitted!');
-                        console.log('Empty the Cart');
-                        this.cart.length = 0;
-
-                        console.log('re-fetch Dishes data from server as stock has been updated...');                                
-                        fetch('https://cst3990-neeti-express.onrender.com/collection/Dishes').then (
-                            function (response) {
-                                response.json().then (
-                                    function (json) {
-                                        // save the returned JSON object to
-                                        // 'dishes' data property
-                                        cloudKitchen.dishes = json;
-                                        console.log(json);
-                                    });
-                            }
-                        )
-                        console.log('re-fetch Customers data from server as details have been updated...');                        
-                        fetch('https://cst3990-neeti-express.onrender.com/collection/Customers').then (
-                            function (response) {
-                                response.json().then (
-                                    function (json) {
-                                        // save the returned JSON object to
-                                        // 'customers' data property
-                                        cloudKitchen.customers = json;
-                                        console.log(json);
-                                    });
-                            }
-                        )
                     },
                 },
                 computed: { //the Computed Property object
