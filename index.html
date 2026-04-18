@@ -351,13 +351,13 @@
                                 },
                                 body: JSON.stringify({
                                     DishID: this.dishId,
-                                    Name: this.dishName,
                                     Category: this.category,
-                                    Tags: this.tags,
+                                    Name: this.dishName,
                                     Price: this.price,
                                     AvailableStock: this.availableStock,
+                                    NutritionFacts: this.nutritionFacts,
                                     Image: this.image,
-                                    NutritionFacts: this.nutritionFacts
+                                    Tags: this.tags
                                 })
                             });
                             //The Web Client has to wait for the server response since it is an asynchronous operation.
