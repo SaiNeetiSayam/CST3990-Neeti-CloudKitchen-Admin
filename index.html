@@ -341,7 +341,7 @@
                     addRow() {
                         this.nutritionFacts.push(["", "", ""]); // always 3 columns
                     },
-                    //  Fetch function to POST customer details to mongoDB database in Customers collection
+                    //  Fetch function to POST dish details to mongoDB database in Dishes collection
                     async postDish() {
                         try {
                             const response = await fetch("https://cst3990-neeti-express.onrender.com/collection/Dishes", {
@@ -424,7 +424,8 @@
                                     });
                             }
                         )                    
-                    },                                        //  Fetch function to PUT available stock to mongoDB database in Dishes collection
+                    },
+                    //  Fetch function to delete a dish from mongoDB database in Dishes collection
                     async delDish() {
                         console.log('Deleting selected dish = ' + this.selectedDish);
                         
