@@ -309,7 +309,7 @@
                         this.lowStockToDisplay.length = 0;
                         //Add items to the array if stock is less than 5
                         for(let i = 0; i < this.dishes.length; i++) {
-                            if (this.dishes[i].AvailableStock < 5) {
+                            if (Number(this.dishes[i].AvailableStock) < 5) {
                                 this.lowStockToDisplay.push([this.dishes[i].DishID, this.dishes[i].Category, this.dishes[i].Name, this.dishes[i].Price, this.dishes[i].AvailableStock]);
                             }  
                         }
@@ -404,8 +404,8 @@
                                     DishID: this.dishId,
                                     Category: this.category,
                                     Name: this.dishName,
-                                    Price: this.price,
-                                    AvailableStock: this.availableStock,
+                                    Price: Number(this.price),
+                                    AvailableStock: Number(this.availableStock),
                                     NutritionFacts: this.nutritionFacts,
                                     Image: this.image,
                                     Tags: this.tags
