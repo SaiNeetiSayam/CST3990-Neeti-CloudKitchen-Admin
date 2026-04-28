@@ -28,13 +28,38 @@
             <main>
                 <div>
                     <p>
-                        <button v-on:click='displayAllDishes' :disabled='!enableButtons'>Display Dishes</button>
-                        <button v-on:click='addADish' :disabled='!enableButtons'>Add Dish</button>
-                        <button v-on:click='updateADish' :disabled='!enableButtons'>Update Dish</button>
-                        <button v-on:click='deleteADish' :disabled='!enableButtons'>Delete Dish</button>
+                        <button v-on:click='lowStockWarning' :disabled='!enableButtons' style="margin-right: 30px;">Low Stock Warning!!</button>
+                        <button v-on:click='displayAllDishes' :disabled='!enableButtons' style="margin-right: 30px;">Display All Stock</button>
+                        <button v-on:click='addADish' :disabled='!enableButtons' style="margin-right: 30px;">Add Dish</button>
+                        <button v-on:click='updateADish' :disabled='!enableButtons' style="margin-right: 30px;">Update Dish</button>
+                        <button v-on:click='deleteADish' :disabled='!enableButtons' style="margin-right: 30px;">Delete Dish</button>
                     </p>
                 </div>
-                <div v-if='displayDishes'>
+                <div v-if='lowStock'>
+                    <div style="display:inline-block;">
+
+                        <!-- Display dish details in a table -->                                                
+                        <table class="lowStockTable">
+                            <!-- Header Row -->
+                            <tr>
+                                <th class="col50">ID</th>
+                                <th class="col200">Category</th>
+                                <th class="col200">Name</th>
+                                <th class="col100">Price (AED)</th>
+                                <th class="col100">Low Stock!!</th>                         
+                            </tr>
+
+                            <!-- Data Rows -->
+                            <tr v-for="(row, rowIndex) in lowStockToDisplay" :key="rowIndex">
+                                <td v-for="(cell, colIndex) in row" :key="colIndex">
+                                    {{ cell }}
+                                </td>
+                            </tr>
+                        </table>
+                        <br>
+                    </div>
+                </div>
+                <div v-else-if='displayDishes'>
                     <div style="display:inline-block;">
 
                         <!-- Display dish details in a table -->                                                
@@ -174,6 +199,7 @@
                 data() {    // returns default null string values for name and phone no., if not entered by user
                     return {
                         displayDishes: false,
+                        lowStock: false,
                         addDish: false,
                         updateDish: false,
                         deleteDish: false,
@@ -198,6 +224,7 @@
                     //the key 'sitename' matches the value of 'v-text' earlier
                     sitename: "Neeti's Cloud Kitchen Admin Module",
                     displayDishes: false,
+                    lowStock: false,
                     addDish: false,
                     updateDish: false,
                     deleteDish: false,
@@ -207,6 +234,7 @@
                     //We need to read dishes from the server/database
                     dishes: [], // array to read dishes from the server & database
                     dishesToDisplay: [],
+                    lowStockToDisplay: [],
                     passwordCheckStatus: "",                    
                     enableButtons: false,
                     selectedDish: null,
@@ -276,13 +304,30 @@
                             this.passwordCheckStatus = "Incorrect Password. Please try again."
                         }                      
                     },
+                    //Display the items where the available stock is less than 5
+                    lowStockWarning()  {
+                        this.lowStockToDisplay.length = 0;
+                        //Add items to the array if stock is less than 5
+                        for(let i = 0; i < this.dishes.length; i++) {
+                            if (this.dishes[i].AvailableStock < 5) {
+                                this.lowStockToDisplay.push([this.dishes[i].DishID, this.dishes[i].Category, this.dishes[i].Name, this.dishes[i].Price, this.dishes[i].AvailableStock]);
+                            }  
+                        }
+                        this.displayDishes = false;
+                        this.lowStock = true;
+                        this.addDish = false;
+                        this.updateDish = false;
+                        this.deleteDish = false;
+                    },
+                    //Display all items in the Dishes table
                     displayAllDishes()  {
                         this.dishesToDisplay.length = 0;
-                        //Create a new array of dishes without _id and NutritionFacts fields
+                        //Add all items to the array of dishes to be displayed
                         for(let i = 0; i < this.dishes.length; i++) {
                             this.dishesToDisplay.push([this.dishes[i].DishID, this.dishes[i].Category, this.dishes[i].Name, this.dishes[i].Price, this.dishes[i].AvailableStock]);
                         }
                         this.displayDishes = true;
+                        this.lowStock = false;
                         this.addDish = false;
                         this.updateDish = false;
                         this.deleteDish = false;
@@ -290,6 +335,7 @@
                     addADish() {
                         this.addDish = true;
                         this.displayDishes = false;
+                        this.lowStock = false;
                         this.updateDish = false;
                         this.deleteDish = false;
                         this.clearDishDetails();
@@ -308,13 +354,18 @@
                         this.updateDish = true;
                         this.addDish = false;
                         this.displayDishes = false;
-                        this.deleteDish = false;                        
+                        this.lowStock = false;
+                        this.deleteDish = false;
+                        this.clearDishDetails();                       
                     },
                     deleteADish() {
                         this.deleteDish = true;
                         this.updateDish = false;
                         this.addDish = false;
                         this.displayDishes = false;
+                        this.lowStock = false;
+                        this.dishId = null; 
+                        this.clearDishDetails();                       
                     },
                     findDish() {
                         this.dishFound = false;

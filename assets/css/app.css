@@ -21,6 +21,15 @@ body {
   width: 60%;
   border-collapse: collapse;
   margin: 20px auto;
+  border: 5px solid blue;
+}
+
+.lowStockTable {
+  table-layout: fixed;
+  width: 60%;
+  border-collapse: collapse;
+  margin: 20px auto;
+  border: 5px solid red;
 }
 
 .col50 { width: 50px; }
@@ -28,7 +37,7 @@ body {
 .col200 { width: 200px; }
 
 th, td {
-  border: 1px solid #0329d1;
+  border: 1px solid #0000ff;
 }
 
 th {
