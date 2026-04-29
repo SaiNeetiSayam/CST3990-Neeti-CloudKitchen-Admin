@@ -43,9 +43,7 @@
                             <!-- Header Row -->
                             <tr>
                                 <th class="col50">ID</th>
-                                <th class="col200">Category</th>
                                 <th class="col200">Name</th>
-                                <th class="col100">Price (AED)</th>
                                 <th class="col100">Low Stock!!</th>                         
                             </tr>
 
@@ -310,7 +308,7 @@
                         //Add items to the array if stock is less than 5
                         for(let i = 0; i < this.dishes.length; i++) {
                             if (Number(this.dishes[i].AvailableStock) < 5) {
-                                this.lowStockToDisplay.push([this.dishes[i].DishID, this.dishes[i].Category, this.dishes[i].Name, this.dishes[i].Price, this.dishes[i].AvailableStock]);
+                                this.lowStockToDisplay.push([this.dishes[i].DishID, this.dishes[i].Name, this.dishes[i].AvailableStock]);
                             }  
                         }
                         this.displayDishes = false;
